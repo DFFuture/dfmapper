@@ -1,7 +1,6 @@
 package ecust.dffuture.dfmapper.qgm;
 
 import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 
@@ -18,7 +17,7 @@ public class Quantifier {
     private Box box;
     private QuantifierType quantifierType;
 
-    private HashMap<Quantifier, Condition> relations = new HashMap <>();
+    private HashMap<Quantifier, Relation> relations = new HashMap <>();
     private List<Condition> conditions = new ArrayList <>();
 
     private String originalName;
@@ -66,7 +65,11 @@ public class Quantifier {
 
     public void addRelation(Quantifier quantifier, Condition condition) {
 
-        relations.put(quantifier, condition);
+        if(relations.containsKey(quantifier)) {
+            relations.get(quantifier).add(condition);
+        }else{
+            relations.put(quantifier, new Relation(condition));
+        }
 
     }
 
@@ -76,5 +79,9 @@ public class Quantifier {
 
     public Table getTName() {
         return tName;
+    }
+
+    public FromItem getFromItem() {
+        return fromItem;
     }
 }

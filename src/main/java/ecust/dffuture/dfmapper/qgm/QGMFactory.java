@@ -10,7 +10,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 
 public class QGMFactory {
 
-    private static int qCounter = 1;
+    private static int qCounter = 0;
     private final static String PREFIX = "Q";
 
     private static String getQName() {

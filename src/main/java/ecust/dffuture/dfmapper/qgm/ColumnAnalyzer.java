@@ -27,12 +27,13 @@ public class ColumnAnalyzer {
     public Quantifier search(String tableReference) {
         SelectBox box = currentBox;
         while(box != null) {
-            for(Quantifier quantifier: currentBox.getQuantifiers()) {
+            for(Quantifier quantifier: box.getQuantifiers()) {
                 if(tableReference.equals(quantifier.getOriginalName())) {
                     return quantifier;
                 }
-                box = (SelectBox) box.getReference().getContainer();
+
             }
+            box = (SelectBox) box.getReference().getContainer();
         }
         return null;
     }

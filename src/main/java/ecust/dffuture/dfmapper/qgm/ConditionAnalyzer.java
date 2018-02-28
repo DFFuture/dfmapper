@@ -7,7 +7,9 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.SubSelect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +27,12 @@ public class ConditionAnalyzer {
         columnAnalyzer.setCurrentBox(box);
     }
 
-    public void classifyCondition(Expression condition) {
-        if(condition instanceof AndExpression) {
-            classifyCondition(((AndExpression) condition).getLeftExpression());
-            classifyCondition(((AndExpression) condition).getRightExpression());
+    public void classifyCondition(Expression expression) {
+        if(expression instanceof AndExpression) {
+            classifyCondition(((AndExpression) expression).getLeftExpression());
+            classifyCondition(((AndExpression) expression).getRightExpression());
         } else {
-            
+            analyzeCondition(expression);
         }
     }
 
@@ -61,17 +63,37 @@ public class ConditionAnalyzer {
         }
     }
 
-    public void analyzeIn(InExpression inExpression, Quantifier inQuantifier) {
+    public Quantifier search(Expression expression) {
+        if(expression instanceof InExpression) {
+            ItemsList itemsList = ((InExpression) expression).getRightItemsList();
+            if(itemsList instanceof SubSelect) {
+                for(Quantifier quantifier: currentBox.getQuantifiers()) {
+                    if(quantifier.getFromItem() == itemsList) {
+                        return quantifier;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public void analyzeIn(InExpression inExpression) {
+        Quantifier inQuantifier = search(inExpression);
         if(inExpression.getLeftExpression() instanceof Column) {
             Column left = (Column) inExpression.getLeftExpression();
             Quantifier quantifier = columnAnalyzer.analyze(left);
-            EqualsTo expression = new EqualsTo();
-            expression.setLeftExpression(left);
-            expression.setRightExpression(new Column(inQuantifier.getTName(),
-                    inQuantifier.getBox().getOutput().get(0).getName()));
-            Condition condition = new Condition(expression);
-            quantifier.addRelation(inQuantifier, condition);
-            inQuantifier.addRelation(quantifier, condition);
+            if(inQuantifier != null) {
+                EqualsTo expression = new EqualsTo();
+                expression.setLeftExpression(left);
+                expression.setRightExpression(new Column(inQuantifier.getTName(),
+                        inQuantifier.getBox().getOutput().get(0).getName()));
+                Condition condition = new Condition(expression);
+                quantifier.addRelation(inQuantifier, condition);
+                inQuantifier.addRelation(quantifier, condition);
+            } else {
+                quantifier.addCondition(new Condition(inExpression));
+            }
+
         }
     }
 

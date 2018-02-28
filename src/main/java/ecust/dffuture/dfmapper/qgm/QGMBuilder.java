@@ -12,6 +12,19 @@ public class QGMBuilder extends QueryVisitor{
     private Stack<SelectBox> selectBoxStack = new Stack <>();
     private ColumnFinder columnFinder = new ColumnFinder();
 
+    private ConditionAnalyzer conditionAnalyzer = new ConditionAnalyzer();
+
+    private void analyze(FromItem fromItem, QuantifierType type) {
+        Quantifier quantifier = QGMFactory.createQuantifier(fromItem, type);
+        selectBoxStack.peek().add(quantifier);
+        qgm.put(quantifier.getName(), quantifier);
+        if(quantifier.getBox() instanceof SelectBox) {
+            selectBoxStack.push((SelectBox) quantifier.getBox());
+            fromItem.accept(this);
+            selectBoxStack.pop();
+        }
+    }
+
     @Override
     public void visit(Select select) {
         qgm = QGMFactory.createQGM(select);
@@ -31,14 +44,7 @@ public class QGMBuilder extends QueryVisitor{
     public void visit(PlainSelect plainSelect) {
         if(plainSelect.getFromItem() != null) {
             FromItem fromItem = plainSelect.getFromItem();
-            Quantifier quantifier = QGMFactory.createQuantifier(fromItem, QuantifierType.FROM);
-            selectBoxStack.peek().add(quantifier);
-            qgm.put(quantifier.getName(), quantifier);
-            if(quantifier.getBox() instanceof SelectBox) {
-                selectBoxStack.push((SelectBox) quantifier.getBox());
-                fromItem.accept(this);
-                selectBoxStack.pop();
-            }
+            analyze(fromItem, QuantifierType.FROM);
         }
 
         if(plainSelect.getSelectItems() != null) {
@@ -49,6 +55,8 @@ public class QGMBuilder extends QueryVisitor{
 
         if(plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this);
+            conditionAnalyzer.setCurrentBox(selectBoxStack.peek());
+            conditionAnalyzer.classifyCondition(plainSelect.getWhere());
         }
     }
 
@@ -70,13 +78,7 @@ public class QGMBuilder extends QueryVisitor{
 
         if(expr.getRightItemsList() instanceof SubSelect) {
             FromItem fromItem = (SubSelect)expr.getRightItemsList();
-            Quantifier quantifier = QGMFactory.createQuantifier(fromItem, QuantifierType.IN);
-            selectBoxStack.peek().add(quantifier);
-            if(quantifier.getBox() instanceof SelectBox) {
-                selectBoxStack.push((SelectBox) quantifier.getBox());
-                fromItem.accept(this);
-                selectBoxStack.pop();
-            }
+            analyze(fromItem, QuantifierType.IN);
 
         }else {
             expr.getRightItemsList().accept(this);
