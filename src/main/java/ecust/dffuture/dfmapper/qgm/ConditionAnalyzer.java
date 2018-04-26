@@ -1,5 +1,7 @@
 package ecust.dffuture.dfmapper.qgm;
 
+import ecust.dffuture.dfmapper.qgm.box.SelectBox;
+import ecust.dffuture.dfmapper.qgm.type.ConditionLocation;
 import ecust.dffuture.dfmapper.visitor.ColumnFinder;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -36,18 +38,23 @@ public class ConditionAnalyzer {
         }
     }
 
-    public void analyzeCondition(Expression expression) {
+    /**
+     * 分析谓语与Quantifier之间的关系
+     * @param predicate 谓语
+     */
+    public void analyzeCondition(Expression predicate) {
 
-        if(expression instanceof InExpression) {
+        if(predicate instanceof InExpression) {
 
-        }else if(expression instanceof ExistsExpression) {
+        }else if(predicate instanceof ExistsExpression) {
 
-        }else if(expression instanceof OrExpression){
+        }else if(predicate instanceof OrExpression){
 
         }else {
-            Condition condition  = new Condition(expression);
+            Predicate condition  = new Predicate(predicate, ConditionLocation.WHERE);
             columnFinder.init();
-            List<Column> columns = columnFinder.getColumns(expression);
+            // 获取包含的列
+            List<Column> columns = columnFinder.getColumns(predicate);
             List<Quantifier> quantifiers = new ArrayList <>();
             for(Column column:columns) {
                 quantifiers.add(columnAnalyzer.analyze(column));
@@ -58,7 +65,7 @@ public class ConditionAnalyzer {
                 quantifiers.get(0).addRelation(quantifiers.get(1), condition);
                 quantifiers.get(1).addRelation(quantifiers.get(0), condition);
             }else {
-                //TODO 三个或三个以上表关联的情况
+                //TODO 谓语包含三个或三个以上列的情况
             }
         }
     }
@@ -87,11 +94,11 @@ public class ConditionAnalyzer {
                 expression.setLeftExpression(left);
                 expression.setRightExpression(new Column(inQuantifier.getTName(),
                         inQuantifier.getBox().getOutput().get(0).getName()));
-                Condition condition = new Condition(expression);
-                quantifier.addRelation(inQuantifier, condition);
-                inQuantifier.addRelation(quantifier, condition);
+                Predicate predicate = new Predicate(expression, ConditionLocation.WHERE);
+                quantifier.addRelation(inQuantifier, predicate);
+                inQuantifier.addRelation(quantifier, predicate);
             } else {
-                quantifier.addCondition(new Condition(inExpression));
+                quantifier.addCondition(new Predicate(inExpression, ConditionLocation.WHERE));
             }
 
         }

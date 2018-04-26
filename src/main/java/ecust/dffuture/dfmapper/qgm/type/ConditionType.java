@@ -1,4 +1,4 @@
-package ecust.dffuture.dfmapper.qgm;
+package ecust.dffuture.dfmapper.qgm.type;
 
 public enum ConditionType {
     SELF,

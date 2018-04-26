@@ -1,5 +1,7 @@
 package ecust.dffuture.dfmapper.qgm;
 
+import ecust.dffuture.dfmapper.qgm.box.SelectBox;
+import ecust.dffuture.dfmapper.qgm.type.QuantifierType;
 import ecust.dffuture.dfmapper.visitor.ColumnFinder;
 import ecust.dffuture.dfmapper.visitor.QueryVisitor;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
@@ -10,7 +12,7 @@ import java.util.Stack;
 public class QGMBuilder extends QueryVisitor{
     private QGM qgm;
     private Stack<SelectBox> selectBoxStack = new Stack <>();
-    private ColumnFinder columnFinder = new ColumnFinder();
+    // private ColumnFinder columnFinder = new ColumnFinder();
 
     private ConditionAnalyzer conditionAnalyzer = new ConditionAnalyzer();
 

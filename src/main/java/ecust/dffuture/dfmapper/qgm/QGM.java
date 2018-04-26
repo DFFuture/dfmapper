@@ -1,5 +1,7 @@
 package ecust.dffuture.dfmapper.qgm;
 
+import ecust.dffuture.dfmapper.qgm.box.Box;
+import ecust.dffuture.dfmapper.qgm.box.SelectBox;
 import net.sf.jsqlparser.statement.Statement;
 
 import java.util.ArrayList;
@@ -10,21 +12,21 @@ public class QGM {
 
     private Statement statement;
 
-    private List<SelectBox> selectBoxes = new ArrayList <>();
+    private List<Box> boxes = new ArrayList <>();
 
     private HashMap<String, Quantifier> quantifiers = new HashMap <>();
 
-    public QGM(Statement statement, SelectBox box) {
+    public QGM(Statement statement, Box box) {
         this(statement);
-        selectBoxes.add(box);
+        boxes.add(box);
     }
 
     public QGM(Statement statement) {
         this.statement = statement;
     }
 
-    public void add(SelectBox selectBox) {
-        this.selectBoxes.add(selectBox);
+    public void add(Box box) {
+        this.boxes.add(box);
     }
 
     public void put(String qName, Quantifier quantifier) {

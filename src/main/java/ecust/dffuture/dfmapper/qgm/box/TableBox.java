@@ -1,7 +1,8 @@
-package ecust.dffuture.dfmapper.qgm;
+package ecust.dffuture.dfmapper.qgm.box;
 
+import ecust.dffuture.dfmapper.qgm.Item;
+import ecust.dffuture.dfmapper.qgm.Quantifier;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.SelectItem;
 
 import java.util.ArrayList;
 import java.util.List;
